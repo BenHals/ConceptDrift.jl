@@ -1,5 +1,5 @@
 module JuliaStream
 
-# Write your package code here.
+include("stream.jl")
 
 end
