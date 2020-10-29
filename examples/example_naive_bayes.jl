@@ -1,7 +1,7 @@
 include("src\\JuliaStream.jl")
 
 a = JuliaStream.SineGenerator(1)
-c = JuliaStream.NaiveBayes(Dict(), Dict(), [])
+c = JuliaStream.NaiveBayes()
 for i in 1:1000000
     X,y = JuliaStream.next_sample!(a, 1)
     JuliaStream.partial_fit!(c, vec(X), y[1])

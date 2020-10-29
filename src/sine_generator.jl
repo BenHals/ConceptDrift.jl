@@ -36,16 +36,16 @@ function SineGenerator(classification_function_idx::Int64)
 end
 
 function next_sample!(s::SineGenerator, batch_size)
-    data_X = Array{Float64, 2}(undef, batch_size, s.stream.n_features)
+    data_X = Array{Float64}(undef, s.stream.n_features, batch_size)
     data_Y = Vector{Int64}(undef, batch_size)
     for j in 1:batch_size
         s.stream.sample_idx += 1
         for f in 1:s.stream.n_features
             feature = rand(s.stream.random_state)
-            data_X[j, f] = feature
+            data_X[f, j] = feature
         end
-        data_Y[j] = s.classification_function(data_X[j, :]...)
-        s.stream.current_sample_x = view(data_X, j, :)
+        data_Y[j] = s.classification_function(data_X[:, j]...)
+        s.stream.current_sample_x = view(data_X, :, j)
         s.stream.current_sample_y = view(data_Y, j:j)
     end
     return data_X, data_Y

@@ -26,3 +26,18 @@ end
 function stdev(g::GaussianEstimator)
     return sqrt(variance(g))
 end
+
+function pdf(g::GaussianEstimator, value::Float64)
+    if g.weight_sum > 0.0
+        std_dev = stdev(g)
+        if std_dev > 0.0
+            diff = value - g.mean
+            return ((1.0 / (NORMAL_CONSTANT * std_dev)) * exp(-(diff^2 / (2.0 * std_dev^2))))
+        elseif value == g.mean
+            return 1.0
+        end
+    end
+    return 0.0
+end
+        
+        
