@@ -1,5 +1,5 @@
 struct NaiveBayes
-    observed_class_distribution::Dict{Int, Int}
+    observed_class_distribution::Dict{Int, Float64}
     attribute_observers::Dict{Int, NumericAttributeObserver}
     classes::Vector{Int}
 end
@@ -8,11 +8,11 @@ function NaiveBayes()
     return NaiveBayes(Dict(), Dict(), [])
 end
 
-function partial_fit!(c::NaiveBayes, X::Vector{Float64}, y::Int64)
+function partial_fit!(c::NaiveBayes, X::Vector{Float64}, y::Int64, weight::Float64=1.0)
     if haskey(c.observed_class_distribution, y)
-        c.observed_class_distribution[y] += 1
+        c.observed_class_distribution[y] += weight
     else
-        c.observed_class_distribution[y] = 1
+        c.observed_class_distribution[y] = weight
     end
     for i in 1:length(X)
         if !haskey(c.attribute_observers, i)
