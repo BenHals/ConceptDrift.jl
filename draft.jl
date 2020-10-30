@@ -89,3 +89,7 @@ for i in 1:100000
 end
 
 acc = right / (right + wrong)
+
+leaf = JuliaStream.filter_instance_to_leaf(c.tree_root, [1.1, 0.1], nothing, -1)
+n = leaf.node
+JuliaStream.get_best_split_suggestions(n)
