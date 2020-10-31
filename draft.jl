@@ -58,6 +58,9 @@ JuliaStream.get_best_split_suggestions(n)
 JuliaStream.predict_one(n, [0.5])
 
 h = JuliaStream.HoeffdingTree()
+h
+leaf = JuliaStream.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
+JuliaStream.learn_one!(leaf.node, [0.5, 1.1], 0)
 JuliaStream.partial_fit!(h, [0.5, 1.1], 0)
 JuliaStream.partial_fit!(h, [0.3, 1.1], 0)
 JuliaStream.partial_fit!(h, [0.4, 1.2], 0)
@@ -67,6 +70,7 @@ JuliaStream.partial_fit!(h, [1.3, 0.1], 1)
 JuliaStream.partial_fit!(h, [1.4, 0.2], 1)
 JuliaStream.partial_fit!(h, [1.6, 0.3], 1)
 JuliaStream.predict(h, [1.4, 0.3])
+JuliaStream.predict(h, [0.4, 1.3])
 
 a = JuliaStream.SineGenerator(3)
 c = JuliaStream.HoeffdingTree()
@@ -89,10 +93,17 @@ for i in 1:100000
 end
 
 acc = right / (right + wrong)
-
-leaf = JuliaStream.filter_instance_to_leaf(c.tree_root, [1.1, 0.1], nothing, -1)
+c
+leaf = JuliaStream.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
 n = leaf.node
 JuliaStream.get_best_split_suggestions(n)
 
-best_split_suggestions = JuliaStream.get_best_split_suggestions(n)
+
 sort!(best_split_suggestions, by = x -> x.merit)
+split_decision = best_split_suggestions[end]
+split_decision.resulting_class_distribution
+for (i, child_distribution) in enumerate(split_decision.resulting_class_distribution)
+    child_distribution
+end
+
+JuliaStream.hoeffding_bound(1, 0.000001, 0.3)

@@ -7,6 +7,23 @@ struct NumericAttributeObserver{T<:AbstractSplitCritereon}
     split_critereon::T
 end
 
+abstract type AbstractConditionalTest end
+
+struct NumericBinaryTest <: AbstractConditionalTest
+    attr_idx::Int64
+    split_value::Float64
+end
+
+
+struct AttributeSplitSuggestion
+    split_test::AbstractConditionalTest
+    resulting_class_distribution::Tuple{Dict{Int64, Float64}, Dict{Int64, Float64}}
+    merit::Float64
+    num_splits::Int64
+end
+
+
+
 function NumericAttributeObserver()
     return NumericAttributeObserver(Dict{Int, GaussianEstimator}(), 10, GiniSplitCritereon())
 end
@@ -70,6 +87,53 @@ function get_range_of_merit(critereon::GiniSplitCritereon)
     return 1.0
 end
 
+"""
+Propose values an attribute could be split at, between the min and max seen.
+"""
+function get_split_point_suggestions(o::NumericAttributeObserver)
+    min_seen, max_seen = range(o)
+    split_difference = (max_seen - min_seen) / (o.num_split_suggestions + 1)
+    split_values = Vector{Float64}()
+    for i in 1:o.num_split_suggestions
+        split_value = min_seen + (split_difference * i)
+        if split_value > min_seen
+            push!(split_values, split_value)
+        end
+    end
+    return split_values
+end
+
+
+function get_binary_split_class_distribution(o::NumericAttributeObserver, split_value::Float64)
+    lhs_dist = Dict{Int64, Float64}()
+    rhs_dist = Dict{Int64, Float64}()
+    for (class, estimator) in o.distribution_per_class
+        if split_value < estimator.min_seen
+            rhs_dist[class] = estimator.weight_sum
+        elseif split_value > estimator.max_seen
+            lhs_dist[class] = estimator.weight_sum
+        else
+            l_dist, e_dist, r_dist = estimated_weight_split(estimator, split_value)
+            lhs_dist[class] = l_dist+e_dist
+            rhs_dist[class] = r_dist
+        end
+    end
+    return (lhs_dist, rhs_dist)
+end
+
+function get_best_split_suggestion(o::NumericAttributeObserver, pre_split_distribution::Dict{Int64, Float64}, att_idx::Int64)
+    best_suggestion = (typemin(Float64), 0.0, (Dict{Int64, Float64}(), Dict{Int64, Float64}()))
+    suggested_split_values = get_split_point_suggestions(o)
+    for split_value in suggested_split_values
+        post_split_dist = get_binary_split_class_distribution(o, split_value)
+        merit = get_split_merit(o.split_critereon, pre_split_distribution, post_split_dist)
+        if merit > best_suggestion[1]
+            best_suggestion = (merit, split_value, post_split_dist)
+        end
+    end
+    split_test = NumericBinaryTest(att_idx, best_suggestion[2])
+    return AttributeSplitSuggestion(split_test, best_suggestion[3], best_suggestion[1], 2)
+end
 
 
 
