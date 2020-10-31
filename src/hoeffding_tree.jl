@@ -60,7 +60,7 @@ function get_best_split_suggestion(o::NumericAttributeObserver, pre_split_distri
     suggested_split_values = get_split_point_suggestions(o)
     for split_value in suggested_split_values
         post_split_dist = get_binary_split_class_distribution(o, split_value)
-        merit = o.get_split_merit(pre_split_distribution, post_split_dist)
+        merit = get_split_merit(o.split_critereon, pre_split_distribution, post_split_dist)
         if merit > best_suggestion[1]
             best_suggestion = (merit, split_value, post_split_dist)
         end
@@ -69,40 +69,6 @@ function get_best_split_suggestion(o::NumericAttributeObserver, pre_split_distri
     return AttributeSplitSuggestion(split_test, best_suggestion[3], best_suggestion[1])
 end
 
-"""
-Calculate the gini impurity of a split as the weighted sum
-of the gini impurity values of each child node.
-"""
-function get_gini_split_merit(pre_split_distribution, post_split_distribution)
-    child_weights = [sum(collect(values(child_dist))) for (child_idx, child_dist) in enumerate(post_split_distribution)]
-    total_weight = sum(child_weights)
-
-    gini = 0.0
-    for (child_idx, child_dist) in enumerate(post_split_distribution)
-        child_relative_weight = child_weights[child_idx] / total_weight
-        child_gini = compute_gini(child_dist, child_weights[child_idx])
-        gini += child_relative_weight * child_gini
-    end
-
-    # Return Inverse to a low gini gets a high merit.
-    return 1.0 - gini
-end
-
-"""
-Compute the gini impurity of a given distribution of class weights.
-The squared proportion of each class is subtracted from 1,
-so a gini impurity of 0.0 is acheived when only one class is present.
-"""
-function compute_gini(class_weight_distribution, total_weight)
-    gini = 1.0
-    if total_weight > 0.0
-        for class_weight in values(class_weight_distribution)
-            class_proportion = class_weight / total_weight
-            gini -= class_proportion^2
-        end
-    end
-    return gini
-end
 
 struct AttributeSplitSuggestion
     split_test::AbstractConditionalTest
@@ -124,7 +90,7 @@ function FoundNode(node, parent, parent_branch)
 end
 
 mutable struct LearningNodeNB <: AbstractNode
-    stats::Dict{Int64, Int64}
+    stats::Dict{Int64, Float64}
     classifier::NaiveBayes
     last_split_attempt::Int64
 end
@@ -133,24 +99,28 @@ function LearningNodeNB()
     return LearningNodeNB(Dict(), NaiveBayes(), 0)
 end
 
+function total_weight(n::AbstractNode)
+    return sum(values(n.stats))
+end
+
 function filter_instance_to_leaf(n::LearningNodeNB, X::Vector{Float64}, parent, parent_branch::Int64)
     return FoundNode(n, parent, parent_branch)
 end
 
-function learn_one!(n::LearningNodeNB, X::Vector{Float64}, y::Int64)
-    update_stats(n, y)
-    partial_fit!(n.classifier, X, y)
+function learn_one!(n::LearningNodeNB, X::Vector{Float64}, y::Int64, weight::Float64=1.0)
+    update_stats(n, y, weight)
+    partial_fit!(n.classifier, X, y, weight)
 end
 
 function predict_one(n::LearningNodeNB, X::Vector{Float64})
     return predict_proba(n.classifier, X)
 end
 
-function update_stats(n::LearningNodeNB, y::Int64)
+function update_stats(n::LearningNodeNB, y::Int64, weight::Float64=1.0)
     if !haskey(n.stats, y)
-        n.stats[y] = 0
+        n.stats[y] = 0.0
     end
-    n.stats[y] += 1
+    n.stats[y] += weight
 end
 
 function get_best_split_suggestions(n::LearningNodeNB)
@@ -174,7 +144,7 @@ end
 
 
 struct HoeffdingTree
-    grace_period::Int64
+    grace_period::Float64
     split_confidence::Float64
     tree_root::AbstractNode
     decision_node_count::Int64
@@ -183,7 +153,7 @@ struct HoeffdingTree
 end
 
 function HoeffdingTree()
-    return HoeffdingTree(200, 0.0000001, LearningNodeNB(), 1, 1, 0.0)
+    return HoeffdingTree(200.0, 0.0000001, LearningNodeNB(), 1, 1, 0.0)
 end
 
 function partial_fit!(c::HoeffdingTree, X::Vector{Float64}, y::Int64)
@@ -193,6 +163,11 @@ function partial_fit!(c::HoeffdingTree, X::Vector{Float64}, y::Int64)
     if typeof(leaf) == LearningNodeNB
         learning_node = leaf
         learn_one!(learning_node, X, y)
+        weight_seen = total_weight(learning_node)
+        seen_since_last_split = weight_seen - learning_node.last_split_attempt
+        if seen_since_last_split >= c.grace_period
+            learning_node.last_split_attempt = weight_seen
+        end
     end
 end
 
@@ -206,3 +181,17 @@ function predict_proba(c::HoeffdingTree, X::Vector{Float64})
     leaf = found_node.node
     return predict_one(leaf, X)
 end
+
+function hoeffding_bound(range, confidence, n)
+    return sqrt((range^2 * log(1.0/confidence)) / (2.0*n))
+end
+
+function attempt_to_split(c::HoeffdingTree, n::LearningNodeNB, parent::SplitNode, parent_idx::Int64)
+    best_split_suggestions = get_best_split_suggestions(n)
+    sort!(best_split_suggestions, by = x -> x.merit)
+    should_split = false
+    if length(best_split_suggestions) < 2
+        should_split = length(best_split_suggestions) > 1
+    end
+end
+

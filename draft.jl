@@ -93,3 +93,6 @@ acc = right / (right + wrong)
 leaf = JuliaStream.filter_instance_to_leaf(c.tree_root, [1.1, 0.1], nothing, -1)
 n = leaf.node
 JuliaStream.get_best_split_suggestions(n)
+
+best_split_suggestions = JuliaStream.get_best_split_suggestions(n)
+sort!(best_split_suggestions, by = x -> x.merit)
