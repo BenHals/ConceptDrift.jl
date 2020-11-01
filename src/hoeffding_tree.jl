@@ -147,8 +147,6 @@ function attempt_to_split(c::HoeffdingTree, n::LearningNodeNB, parent::Union{Spl
     should_split = false
     if length(best_split_suggestions) < 2
         should_split = length(best_split_suggestions) > 1
-        
-    # end
     else
         hoeffding_value = hoeffding_bound(get_range_of_merit(n.split_critereon), c.split_confidence, total_weight(n))
         best_suggestion = best_split_suggestions[end]
