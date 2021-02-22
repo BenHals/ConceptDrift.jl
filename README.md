@@ -1,4 +1,4 @@
-# JuliaStream
+# StreamLearning.jl
 
 [![Build Status](https://travis-ci.com/benhals/JuliaStream.jl.svg?branch=master)](https://travis-ci.com/benhals/JuliaStream.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/benhals/JuliaStream.jl?svg=true)](https://ci.appveyor.com/project/benhals/JuliaStream-jl)

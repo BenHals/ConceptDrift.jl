@@ -157,3 +157,6 @@ s = Stock(:TSLA, "tesla")
 function  t(x::T) where {T}
     return LiquidityStyle(T)
 end
+
+r = t(s)
+typeof(r)
