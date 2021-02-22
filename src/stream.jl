@@ -1,6 +1,9 @@
 using Random
 abstract type AbstractDataStream end
 
+"""
+Information representing a data stream.
+"""
 mutable struct Stream
     n_samples::Int
     n_targets::Int
@@ -30,6 +33,10 @@ function get_stream_name(s::AbstractDataStream)
     return s.stream.name
 end
 
+
+"""
+Reset the RNG state sample counter to starting state.
+"""
 function stream_reset!(s::AbstractDataStream)
     rng = MersenneTwister(s.stream.random_state_seed)
     s.stream.random_state = rng

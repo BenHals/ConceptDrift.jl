@@ -107,3 +107,53 @@ for (i, child_distribution) in enumerate(split_decision.resulting_class_distribu
 end
 
 JuliaStream.hoeffding_bound(1, 0.000001, 0.3)
+
+
+
+abstract type Asset end
+
+abstract type Property <: Asset end
+abstract type Investment <: Asset end
+abstract type Cash <: Asset end
+
+abstract type House <: Property end
+abstract type Apartment <: Property end
+
+abstract type FixedIncome <: Investment end
+abstract type Equity <: Investment end
+abstract type LiquidityStyle end
+struct Residence <: House
+    location
+ end
+ 
+ struct Stock <: Equity
+     symbol
+     name
+ end
+ 
+ struct TreasuryBill <: FixedIncome
+     cusip
+ end
+ 
+ struct Money <: Cash
+     currency
+     amount
+ end
+struct IsLiquid <: LiquidityStyle end
+struct IsIlliquid <: LiquidityStyle end
+# Default behavior is illiquid
+LiquidityStyle(::Type) = IsIlliquid()
+
+# Cash is always liquid
+LiquidityStyle(::Type{<:Cash}) = IsLiquid()
+
+# Any subtype of Investment is liquid
+LiquidityStyle(::Type{<:Investment}) = IsLiquid()
+tradable(x::T) where {T} = tradable(LiquidityStyle(T), x)
+tradable(::IsLiquid, x) = true
+tradable(::IsIlliquid, x) = false
+
+s = Stock(:TSLA, "tesla")
+function  t(x::T) where {T}
+    return LiquidityStyle(T)
+end

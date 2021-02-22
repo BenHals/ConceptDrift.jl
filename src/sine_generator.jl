@@ -1,3 +1,12 @@
+"""
+An infinite length 2 feature data stream generator based on the sine function.
+
+    # Arguments:
+    * `stream::Stream`: A container of data stream options
+    * `classification_function`: One of the 4 functions `sine_func_[0, 1, 2, 3]`.
+            Determines how the label is generated from features.
+
+"""
 struct SineGenerator{F<:Function} <: AbstractDataStream
     stream::Stream
     classification_function::F
@@ -30,11 +39,19 @@ function select_sine_func(classification_function_idx::Int64)
     return classification_function
 end
 
+"""
+Initialize a SineGenerator using an Int to select a classification_function.
+"""
 function SineGenerator(classification_function_idx::Int64)
     classification_function = select_sine_func(classification_function_idx)
     return SineGenerator(Stream("SineGenerator", 2), classification_function)
 end
 
+"""
+Generate the next X,y sample in the stream.
+X is a 2 dimensional vector, uniformly sampled between 0-1.
+y is determined by the classification_function of the SineGenerator.
+"""
 function next_sample!(s::SineGenerator, batch_size)
     data_X = Array{Float64}(undef, s.stream.n_features, batch_size)
     data_Y = Vector{Int64}(undef, batch_size)
