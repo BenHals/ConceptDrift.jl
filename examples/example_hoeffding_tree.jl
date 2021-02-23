@@ -21,6 +21,7 @@ function get_classifier_accuracy_test(c::JuliaStream.HoeffdingTree, a::JuliaStre
     acc = right / (right + wrong)
 end
 
-a = JuliaStream.SineGenerator(0)
+# a = JuliaStream.SineGenerator(0)
+a = JuliaStream.RandomTreeGenerator(min_leaf_depth=5)
 c = JuliaStream.HoeffdingTree()
 test_result = @timed get_classifier_accuracy_test(c, a)

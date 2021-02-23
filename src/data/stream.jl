@@ -51,6 +51,10 @@ function Stream(name::String, n_features::Int64)
     return Stream(-1, 1, n_features, n_features, 0, 2, [], [], [], 0, ["f$(i)" for i in 1:n_features], ["label"], [0, 1], name, seed, rng)
 end
 
+function classify_instance(s::AbstractDataStream, X)
+    return 0
+end
+
 function get_stream_name(s::AbstractDataStream)
     return s.stream.name
 end
@@ -65,11 +69,15 @@ function next_sample!(s::AbstractDataStream, batch_size)
     data_Y = Vector{Int64}(undef, batch_size)
     for j in 1:batch_size
         s.stream.sample_idx += 1
-        for f in 1:s.stream.n_features
-            feature = next_feature(s, f)
+        for f in 1:s.stream.n_num_features
+            feature = next_num_feature(s, f)
             data_X[f, j] = feature
         end
-        data_Y[j] = s.classification_function(data_X[:, j]...)
+        for f in s.stream.n_num_features+1:s.stream.n_features
+            feature = next_cat_feature(s, f)
+            data_X[f, j] = feature
+        end
+        data_Y[j] = classify_instance(s, data_X[:, j])
         s.stream.current_sample_x = view(data_X, :, j)
         s.stream.current_sample_y = view(data_Y, j:j)
     end
@@ -87,3 +95,16 @@ function stream_reset!(s::AbstractDataStream)
     return
 end
 
+"""
+Each feature is uniform random in range [0, 1]
+"""
+function next_num_feature(s::AbstractDataStream, f_id::Int)
+    rand(s.stream.random_state)
+end
+
+"""
+Each feature is an int between 1 and 10
+"""
+function next_cat_feature(s::AbstractDataStream, f_id::Int)
+    rand(s.stream.random_state, 1:10)
+end

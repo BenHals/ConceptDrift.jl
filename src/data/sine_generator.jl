@@ -45,6 +45,10 @@ function select_sine_func(classification_function_idx::Int64)
     return classification_function
 end
 
+function classify_instance(s::SineGenerator, X)
+    s.classification_function(X...)
+end
+
 """
 Initialize a SineGenerator using an Int to select a classification_function.
 """

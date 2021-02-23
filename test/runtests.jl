@@ -131,3 +131,16 @@ end
     @test JuliaStream.predict_proba(c, [0.1, 1.0]) == Dict(0=>4.9975160518252554e-40,1=>0.3333333333333333)
     @test JuliaStream.predict(c, [0.1, 1.0]) == 1
 end
+
+@testset "data\\random_tree_generator.kl" begin
+    @test JuliaStream.get_cat_value_from_onehot([0, 0, 1], 1, 0, 3) == 3
+    @test JuliaStream.get_cat_value_from_onehot([0, 0, 1], 1, 0, 3) == 3
+    @test JuliaStream.get_cat_value_from_onehot([0, 1, 0], 1, 0, 3) == 2
+    @test JuliaStream.get_cat_value_from_onehot([1, 0, 0], 1, 0, 3) == 1
+    @test JuliaStream.get_cat_value_from_onehot([1, 0, 0, 0, 0, 1], 2, 0, 3) == 3
+    @test JuliaStream.get_cat_value_from_onehot([1, 0, 0, 0, 1, 0], 2, 0, 3) == 2
+    @test JuliaStream.get_cat_value_from_onehot([1, 0, 0, 1, 0, 0], 2, 0, 3) == 1
+    @test JuliaStream.get_cat_value_from_onehot([3, 1, 0, 0, 0, 0, 1], 3, 1, 3) == 3
+    @test JuliaStream.get_cat_value_from_onehot([3, 1, 0, 0, 0, 1, 0], 3, 1, 3) == 2
+    @test JuliaStream.get_cat_value_from_onehot([3, 1, 0, 0, 1, 0, 0], 3, 1, 3) == 1
+end

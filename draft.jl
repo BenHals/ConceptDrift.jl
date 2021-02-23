@@ -160,3 +160,6 @@ end
 
 r = t(s)
 typeof(r)
+
+
+JuliaStream.get_cat_value_from_onehot([0, 0, 1], 1, 0, 3)
