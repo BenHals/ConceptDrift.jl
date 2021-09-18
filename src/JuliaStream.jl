@@ -1,4 +1,4 @@
-module JuliaStream
+module ConceptDrift
 
 include("data\\stream.jl")
 include("data\\sine_generator.jl")

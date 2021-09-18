@@ -60,7 +60,7 @@ end
 """
 Each feature is uniform random in range [0, 1]
 """
-function next_feature(s::SineGenerator, f_id::Int)
+function next_num_feature(s::SineGenerator, f_id::Int)
     rand(s.stream.random_state)
 end
 

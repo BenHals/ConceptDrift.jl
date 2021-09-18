@@ -1,18 +1,18 @@
-include("src\\JuliaStream.jl")
+include("src\\ConceptDrift.jl")
 
-a = JuliaStream.SineGenerator(1)
-c = JuliaStream.NaiveBayes(Dict(), Dict(), [])
+a = ConceptDrift.SineGenerator(1)
+c = ConceptDrift.NaiveBayes(Dict(), Dict(), [])
 for i in 1:1000000
-    X,y = JuliaStream.next_sample!(a, 1)
-    JuliaStream.partial_fit!(c, vec(X), y[1])
+    X,y = ConceptDrift.next_sample!(a, 1)
+    ConceptDrift.partial_fit!(c, vec(X), y[1])
 end
 
-# a = JuliaStream.SineGenerator(2)
+# a = ConceptDrift.SineGenerator(2)
 right = 0
 wrong = 0
 for i in 1:100000
-    X,y = JuliaStream.next_sample!(a, 1)
-    label = JuliaStream.predict(c, vec(X))
+    X,y = ConceptDrift.next_sample!(a, 1)
+    label = ConceptDrift.predict(c, vec(X))
     if label == y[1]
         right += 1
     else
@@ -23,68 +23,68 @@ end
 acc = right / (right + wrong)
 
 
-o = JuliaStream.NumericAttributeObserver()
+o = ConceptDrift.NumericAttributeObserver()
 
-JuliaStream.update(o, 0.5, 1)
-JuliaStream.update(o, 0.75, 1)
-JuliaStream.update(o, 0.75, 0)
-JuliaStream.update(o, 1.75, 0)
-JuliaStream.update(o, 0.75, 0)
+ConceptDrift.update(o, 0.5, 1)
+ConceptDrift.update(o, 0.75, 1)
+ConceptDrift.update(o, 0.75, 0)
+ConceptDrift.update(o, 1.75, 0)
+ConceptDrift.update(o, 0.75, 0)
 o
-JuliaStream.range(o)
+ConceptDrift.range(o)
 
-JuliaStream.get_split_point_suggestions(o)
-JuliaStream.estimated_weight_split(o.distribution_per_class[1], 0.25)
+ConceptDrift.get_split_point_suggestions(o)
+ConceptDrift.estimated_weight_split(o.distribution_per_class[1], 0.25)
 
-JuliaStream.get_binary_split_class_distribution(o, 1.0)
-split = JuliaStream.get_best_split_suggestion(o, Dict(0=>3.0, 1=>2.0), 1)
+ConceptDrift.get_binary_split_class_distribution(o, 1.0)
+split = ConceptDrift.get_best_split_suggestion(o, Dict(0=>3.0, 1=>2.0), 1)
 
-JuliaStream.branch_for_instance(split.split_test, [0.6, 1.0])
+ConceptDrift.branch_for_instance(split.split_test, [0.6, 1.0])
 
-JuliaStream.pdf(o.distribution_per_class[1], 0.625)
-stdev = JuliaStream.stdev(o.distribution_per_class[1])
+ConceptDrift.pdf(o.distribution_per_class[1], 0.625)
+stdev = ConceptDrift.stdev(o.distribution_per_class[1])
 pdf(Normal(o.distribution_per_class[1].mean, stdev), 0.25)
 
-n = JuliaStream.LearningNodeNB()
-JuliaStream.learn_one!(n, [0.5], 1)
-JuliaStream.learn_one!(n, [0.75], 1)
-JuliaStream.learn_one!(n, [0.75], 0)
-JuliaStream.learn_one!(n, [1.75], 0)
-JuliaStream.learn_one!(n, [0.75], 0)
+n = ConceptDrift.LearningNodeNB()
+ConceptDrift.learn_one!(n, [0.5], 1)
+ConceptDrift.learn_one!(n, [0.75], 1)
+ConceptDrift.learn_one!(n, [0.75], 0)
+ConceptDrift.learn_one!(n, [1.75], 0)
+ConceptDrift.learn_one!(n, [0.75], 0)
 n
 
-JuliaStream.get_best_split_suggestions(n)
+ConceptDrift.get_best_split_suggestions(n)
 
-JuliaStream.predict_one(n, [0.5])
+ConceptDrift.predict_one(n, [0.5])
 
-h = JuliaStream.HoeffdingTree()
+h = ConceptDrift.HoeffdingTree()
 h
-leaf = JuliaStream.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
-JuliaStream.learn_one!(leaf.node, [0.5, 1.1], 0)
-JuliaStream.partial_fit!(h, [0.5, 1.1], 0)
-JuliaStream.partial_fit!(h, [0.3, 1.1], 0)
-JuliaStream.partial_fit!(h, [0.4, 1.2], 0)
-JuliaStream.partial_fit!(h, [0.6, 0.8], 0)
-JuliaStream.partial_fit!(h, [1.5, 0.1], 1)
-JuliaStream.partial_fit!(h, [1.3, 0.1], 1)
-JuliaStream.partial_fit!(h, [1.4, 0.2], 1)
-JuliaStream.partial_fit!(h, [1.6, 0.3], 1)
-JuliaStream.predict(h, [1.4, 0.3])
-JuliaStream.predict(h, [0.4, 1.3])
+leaf = ConceptDrift.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
+ConceptDrift.learn_one!(leaf.node, [0.5, 1.1], 0)
+ConceptDrift.partial_fit!(h, [0.5, 1.1], 0)
+ConceptDrift.partial_fit!(h, [0.3, 1.1], 0)
+ConceptDrift.partial_fit!(h, [0.4, 1.2], 0)
+ConceptDrift.partial_fit!(h, [0.6, 0.8], 0)
+ConceptDrift.partial_fit!(h, [1.5, 0.1], 1)
+ConceptDrift.partial_fit!(h, [1.3, 0.1], 1)
+ConceptDrift.partial_fit!(h, [1.4, 0.2], 1)
+ConceptDrift.partial_fit!(h, [1.6, 0.3], 1)
+ConceptDrift.predict(h, [1.4, 0.3])
+ConceptDrift.predict(h, [0.4, 1.3])
 
-a = JuliaStream.SineGenerator(3)
-c = JuliaStream.HoeffdingTree()
+a = ConceptDrift.SineGenerator(3)
+c = ConceptDrift.HoeffdingTree()
 for i in 1:1000000
-    X,y = JuliaStream.next_sample!(a, 1)
-    JuliaStream.partial_fit!(c, vec(X), y[1])
+    X,y = ConceptDrift.next_sample!(a, 1)
+    ConceptDrift.partial_fit!(c, vec(X), y[1])
 end
 
-# a = JuliaStream.SineGenerator(2)
+# a = ConceptDrift.SineGenerator(2)
 right = 0
 wrong = 0
 for i in 1:100000
-    X,y = JuliaStream.next_sample!(a, 1)
-    label = JuliaStream.predict(c, vec(X))
+    X,y = ConceptDrift.next_sample!(a, 1)
+    label = ConceptDrift.predict(c, vec(X))
     if label == y[1]
         right += 1
     else
@@ -94,9 +94,9 @@ end
 
 acc = right / (right + wrong)
 c
-leaf = JuliaStream.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
+leaf = ConceptDrift.filter_instance_to_leaf(h.tree_root, [1.1, 0.1], nothing, -1)
 n = leaf.node
-JuliaStream.get_best_split_suggestions(n)
+ConceptDrift.get_best_split_suggestions(n)
 
 
 sort!(best_split_suggestions, by = x -> x.merit)
@@ -106,7 +106,7 @@ for (i, child_distribution) in enumerate(split_decision.resulting_class_distribu
     child_distribution
 end
 
-JuliaStream.hoeffding_bound(1, 0.000001, 0.3)
+ConceptDrift.hoeffding_bound(1, 0.000001, 0.3)
 
 
 
@@ -161,5 +161,18 @@ end
 r = t(s)
 typeof(r)
 
+include("src\\ConceptDrift.jl")
+ConceptDrift.get_cat_value_from_onehot([0, 0, 1], 1, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([0, 1, 0], 1, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([1, 0, 0], 1, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([1, 0, 0, 0, 0, 1], 2, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([1, 0, 0, 0, 1, 0], 2, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([1, 0, 0, 1, 0, 0], 2, 0, 3)
+ConceptDrift.get_cat_value_from_onehot([3, 1, 0, 0, 0, 0, 1], 3, 1, 3)
+ConceptDrift.get_cat_value_from_onehot([3, 1, 0, 0, 0, 1, 0], 3, 1, 3)
+ConceptDrift.get_cat_value_from_onehot([3, 1, 0, 0, 1, 0, 0], 3, 1, 3)
 
-JuliaStream.get_cat_value_from_onehot([0, 0, 1], 1, 0, 3)
+
+h = ConceptDrift.RandomTreeGenerator()
+
+ConceptDrift.next_sample!(h, 1)

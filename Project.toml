@@ -1,4 +1,4 @@
-name = "JuliaStream"
+name = "ConceptDrift"
 uuid = "b5d20642-ab6c-4305-92c6-45d8cf36df8e"
 authors = ["Ben Halstead"]
 version = "0.1.0"
